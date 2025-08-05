@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Details - Admin Dashboard</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-blue: #0d6efd;
+            --secondary-blue: #0056b3;
+            --success-green: #198754;
+            --danger-red: #dc3545;
+            --warning-yellow: #ffc107;
+            --light-gray: #f8f9fa;
+            --dark-gray: #343a40;
+            --gradient-primary: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-gray);
+            margin: 0;
+            padding: 0;
+        }
+        
+        .dashboard-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .dashboard-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .btn-custom {
+            border-radius: 8px;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-back {
+            background-color: var(--dark-gray);
+            color: white;
+        }
+        
+        .btn-back:hover {
+            background-color: #495057;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 58, 64, 0.3);
+        }
+        
+        .btn-edit {
+            background-color: var(--warning-yellow);
+            color: var(--dark-gray);
+        }
+        
+        .btn-edit:hover {
+            background-color: #e0a800;
+            color: var(--dark-gray);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+        }
+        
+        .btn-delete {
+            background-color: var(--danger-red);
+            color: white;
+        }
+        
+        .btn-delete:hover {
+            background-color: #c82333;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+        
+        .btn-dashboard {
+            background-color: var(--success-green);
+            color: white;
+        }
+        
+        .btn-dashboard:hover {
+            background-color: #157347;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
+        }
+        
+        .btn-logout {
+            background-color: var(--danger-red);
+            color: white;
+        }
+        
+        .btn-logout:hover {
+            background-color: #c82333;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+        
+        .main-content {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .user-details-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-top: 2rem;
+        }
+        
+        .card-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+        
+        .user-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            border: 4px solid rgba(255,255,255,0.3);
+        }
+        
+        .user-avatar i {
+            font-size: 3rem;
+            color: white;
+        }
+        
+        .user-name {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        .user-email {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 0;
+        }
+        
+        .card-body {
+            padding: 2rem;
+        }
+        
+        .info-section {
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--dark-gray);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-blue);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .info-item {
+            background: var(--light-gray);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary-blue);
+            transition: transform 0.3s ease;
+        }
+        
+        .info-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .info-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--secondary-blue);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin: 0;
+        }
+        
+        .role-badge {
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 1rem;
+            text-align: center;
+            display: inline-block;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .role-admin {
+            background-color: var(--danger-red);
+            color: white;
+        }
+        
+        .role-user {
+            background-color: var(--primary-blue);
+            color: white;
+        }
+        
+        .status-badge {
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 1rem;
+            text-align: center;
+            display: inline-block;
+        }
+        
+        .status-active {
+            background-color: var(--success-green);
+            color: white;
+        }
+        
+        .action-buttons-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #dee2e6;
+            text-align: center;
+        }
+        
+        .btn-action-large {
+            padding: 1rem 2rem;
+            margin: 0 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            border: none;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .metadata-section {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .metadata-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .alert {
+            border-radius: 8px;
+            border: none;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-header {
+                padding: 1rem;
+            }
+            
+            .dashboard-title {
+                font-size: 1.8rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .btn-custom {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .card-header {
+                padding: 1.5rem;
+            }
+            
+            .user-avatar {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .user-avatar i {
+                font-size: 2rem;
+            }
+            
+            .user-name {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="dashboard-title">
+                <i class="bi bi-person-circle me-2"></i>
+                User Details
+            </h1>
+            <div class="action-buttons">
+                <a href="/admin/users" class="btn btn-custom btn-back">
+                    <i class="bi bi-arrow-left"></i>
+                    Back to User List
+                </a>
+                <a href="/admin" class="btn btn-custom btn-dashboard">
+                    <i class="bi bi-speedometer2"></i>
+                    Dashboard
+                </a>
+                <form th:action="@{/logout}" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-custom btn-logout">
+                        <i class="bi bi-box-arrow-right"></i>
+                        Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Error Messages -->
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <strong>Error:</strong>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- User Details Card -->
+        <div class="user-details-card" th:if="${user}">
+            <!-- Card Header with User Avatar and Basic Info -->
+            <div class="card-header">
+                <div class="user-avatar">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+                <h2 class="user-name" th:text="${user.firstName + ' ' + user.lastName}">User Name</h2>
+                <p class="user-email" th:text="${user.email}">user@example.com</p>
+            </div>
+
+            <!-- Card Body with Detailed Information -->
+            <div class="card-body">
+                <!-- Personal Information Section -->
+                <div class="info-section">
+                    <h3 class="section-title">
+                        <i class="bi bi-person-badge"></i>
+                        Personal Information
+                    </h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">User ID</div>
+                            <p class="info-value" th:text="${user.id}">1</p>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">First Name</div>
+                            <p class="info-value" th:text="${user.firstName}">John</p>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Last Name</div>
+                            <p class="info-value" th:text="${user.lastName}">Doe</p>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Age</div>
+                            <p class="info-value" th:text="${user.age}">30</p>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Email Address</div>
+                            <p class="info-value" th:text="${user.email}">john.doe@example.com</p>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Username</div>
+                            <p class="info-value" th:text="${user.username}">johndoe</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Role and Status Section -->
+                <div class="info-section">
+                    <h3 class="section-title">
+                        <i class="bi bi-shield-check"></i>
+                        Role & Status
+                    </h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">User Roles</div>
+                            <div class="info-value">
+                                <span th:each="role : ${user.roles}" 
+                                      th:class="${role.name == 'ADMIN' ? 'role-badge role-admin' : 'role-badge role-user'}"
+                                      th:text="${role.name == 'ADMIN' ? 'Administrator' : 'User'}">
+                                    User
+                                </span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Account Status</div>
+                            <div class="info-value">
+                                <span class="status-badge status-active">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Metadata Section -->
+                <div class="info-section">
+                    <h3 class="section-title">
+                        <i class="bi bi-clock-history"></i>
+                        Account Information
+                    </h3>
+                    <div class="metadata-section">
+                        <div class="metadata-title">
+                            <i class="bi bi-info-circle"></i>
+                            Additional Details
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">Member since:</small>
+                                <p class="mb-2"><strong>Registration Date Available</strong></p>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Last updated:</small>
+                                <p class="mb-2"><strong>Update History Available</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons Section -->
+                <div class="action-buttons-section">
+                    <a th:href="'/admin/users/' + ${user.id} + '/edit'" class="btn btn-action-large btn-edit">
+                        <i class="bi bi-pencil-square"></i>
+                        Edit User
+                    </a>
+                    <button onclick="confirmDelete()" class="btn btn-action-large btn-delete">
+                        <i class="bi bi-trash"></i>
+                        Delete User
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Delete User Confirmation
+        function confirmDelete() {
+            const userId = /*[[${user.id}]]*/ 0;
+            const userName = /*[[${user.firstName + ' ' + user.lastName}]]*/ 'User';
+            
+            Swal.fire({
+                title: 'Are you sure?',
+                text: `This will permanently delete ${userName} from the system!`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                showLoaderOnConfirm: true,
+                preConfirm: async () => {
+                    try {
+                        const response = await fetch(`/admin/delete/${userId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('Failed to delete user');
+                        }
+
+                        return response;
+                    } catch (error) {
+                        Swal.showValidationMessage(`Error: ${error.message}`);
+                    }
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: `${userName} has been successfully deleted.`,
+                        icon: 'success',
+                        confirmButtonColor: '#198754',
+                        timer: 2000,
+                        timerProgressBar: true
+                    }).then(() => {
+                        window.location.href = '/admin/users';
+                    });
+                }
+            });
+        }
+
+        // Auto-hide alerts after 5 seconds
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+
+        // Add smooth scroll behavior for internal links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add animation to info items on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const infoItems = document.querySelectorAll('.info-item');
+            infoItems.forEach((item, index) => {
+                setTimeout(() => {
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateY(20px)';
+                    item.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    
+                    setTimeout(() => {
+                        item.style.opacity = '1';
+                        item.style.transform = 'translateY(0)';
+                    }, 100);
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>
