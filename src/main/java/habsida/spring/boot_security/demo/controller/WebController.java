@@ -80,7 +80,11 @@ public class WebController {
         }
 
         try {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            System.out.println("=== WEB CONTROLLER ADD USER ===");
+            System.out.println("User data: " + user.getFirstName() + " " + user.getLastName() + " (" + user.getEmail() + ")");
+            System.out.println("Role IDs received: " + roleIds);
+            
+            // Don't encode password here - let the service handle it
             user.setUsername(user.getEmail());
 
             Set<Role> roles = roleIds.stream()
@@ -88,10 +92,15 @@ public class WebController {
                             .orElseThrow(() -> new RuntimeException("Invalid role ID: " + id)))
                     .collect(Collectors.toSet());
             user.setRoles(roles);
+            
+            System.out.println("Roles resolved: " + roles);
 
             userService.saveUser(user);
             redirectAttributes.addFlashAttribute("addSuccess", "User added successfully!");
+            System.out.println("User saved successfully!");
         } catch (Exception e) {
+            System.err.println("Error saving user: " + e.getMessage());
+            e.printStackTrace();
             redirectAttributes.addFlashAttribute("error", "Failed to add user: " + e.getMessage());
         }
         
