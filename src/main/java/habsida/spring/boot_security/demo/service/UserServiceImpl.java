@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
@@ -66,7 +67,13 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
+    @Transactional
     public void saveUser(User user) {
+        System.out.println("=== SAVING USER ===");
+        System.out.println("User ID: " + user.getId());
+        System.out.println("User Email: " + user.getEmail());
+        System.out.println("User Roles: " + user.getRoles());
+        
         // Fetch existing user if it's an update
         Optional<User> existingUserOpt = user.getId() != null ? userRepository.findById(user.getId()) : Optional.empty();
 
@@ -79,21 +86,37 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 user.setPassword(passwordEncoder.encode(user.getPassword()));
             }
         } else {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            // New user - encode password
+            if (user.getPassword() != null && !user.getPassword().isBlank()) {
+                user.setPassword(passwordEncoder.encode(user.getPassword()));
+            }
         }
 
         // Always sync username to email
         user.setUsername(user.getEmail());
 
-        Set<Role> resolvedRoles = new HashSet<>();
-        for (Role role : user.getRoles()) {
-            Role dbRole = roleService.findByName(role.getName())
-                    .orElseThrow(() -> new RuntimeException("Role not found: " + role.getName()));
-            resolvedRoles.add(dbRole);
+        // Handle roles - they are already resolved from the controller
+        if (user.getRoles() != null && !user.getRoles().isEmpty()) {
+            Set<Role> resolvedRoles = new HashSet<>();
+            for (Role role : user.getRoles()) {
+                // If role has ID, fetch from database
+                if (role.getId() != null) {
+                    Role dbRole = roleService.findById(role.getId())
+                            .orElseThrow(() -> new RuntimeException("Role not found with ID: " + role.getId()));
+                    resolvedRoles.add(dbRole);
+                } else if (role.getName() != null) {
+                    // If role has name, find by name
+                    Role dbRole = roleService.findByName(role.getName())
+                            .orElseThrow(() -> new RuntimeException("Role not found: " + role.getName()));
+                    resolvedRoles.add(dbRole);
+                }
+            }
+            user.setRoles(resolvedRoles);
         }
-        user.setRoles(resolvedRoles);
 
-        userRepository.save(user);
+        System.out.println("Final user before save: " + user.getEmail() + " with roles: " + user.getRoles());
+        User savedUser = userRepository.save(user);
+        System.out.println("User saved with ID: " + savedUser.getId());
     }
 
     @Override
@@ -145,6 +168,11 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+    }
+
+    // Helper method for DataInitializer
+    public UserRepository getUserRepository() {
+        return userRepository;
     }
 
 }
