@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: spring-security-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: '.hassan.92'
+      MYSQL_DATABASE: securityProject
+      MYSQL_USER: springuser
+      MYSQL_PASSWORD: '.hassan.92'
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+volumes:
+  mysql_data:
+    driver: local
